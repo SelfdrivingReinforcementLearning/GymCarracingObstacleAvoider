@@ -1,4 +1,4 @@
-__credits__ = ["Andrea PIERRÉ"]
+__credits__ = ["Andrea PIERRÉ, obstacles and adjustments added by Fabian Prasch"]
 
 import math
 from typing import Optional, Union
@@ -88,9 +88,13 @@ class FrictionDetector(contactListener):
         if begin:
             obj.tiles.add(tile)
             if not tile.road_visited:
-                tile.road_visited = True
-                self.env.reward += 1000.0 / len(self.env.track)
-                self.env.tile_visited_count += 1
+                if tile.type == 1:
+                    self.env.reward -= 50.0
+                    return
+                else:
+                    tile.road_visited = True
+                    self.env.reward += 1000.0 / len(self.env.track)
+                    self.env.tile_visited_count += 1
 
                 # Lap is considered completed if enough % of the track was covered
                 if (
@@ -198,7 +202,7 @@ class CarRacing(gym.Env, EzPickle):
         verbose: bool = False,
         lap_complete_percent: float = 0.95,
         domain_randomize: bool = False,
-        continuous: bool = True,
+        continuous: bool = False,
     ):
         EzPickle.__init__(self)
         self.continuous = continuous
@@ -413,6 +417,7 @@ class CarRacing(gym.Env, EzPickle):
                 border[i - neg] |= border[i]
 
         # Create tiles
+        obstacles_in_proximity = 1
         for i in range(len(track)):
             alpha1, beta1, x1, y1 = track[i]
             alpha2, beta2, x2, y2 = track[i - 1]
@@ -441,9 +446,42 @@ class CarRacing(gym.Env, EzPickle):
             t.road_visited = False
             t.road_friction = 1.0
             t.idx = i
+            t.type = 0
             t.fixtures[0].sensor = True
             self.road_poly.append(([road1_l, road1_r, road2_r, road2_l], t.color))
             self.road.append(t)
+            if obstacles_in_proximity >= 5 and np.random.random() < 0.05:
+                var = 2/3
+                translate = np.random.random()
+                obstacle1_l = (
+                    x1 - TRACK_WIDTH * math.cos(beta1) + (2*(TRACK_WIDTH * math.cos(beta1)) - (TRACK_WIDTH * math.cos(beta1) * (1-var)))*translate,
+                    y1 - TRACK_WIDTH * math.sin(beta1) + (2*(TRACK_WIDTH * math.sin(beta1)) - (TRACK_WIDTH * math.sin(beta1) * (1-var)))*translate,
+                )
+                obstacle2_l = (
+                    x2 - TRACK_WIDTH * math.cos(beta2) + (2*(TRACK_WIDTH * math.cos(beta2)) - (TRACK_WIDTH * math.cos(beta2) * (1-var)))*translate,
+                    y2 - TRACK_WIDTH * math.sin(beta2) + (2*(TRACK_WIDTH * math.sin(beta2)) - (TRACK_WIDTH * math.sin(beta2) * (1-var)))*translate,
+                )
+                obstacle1_r = (
+                    x1 - TRACK_WIDTH * math.cos(beta1) * var + (2*(TRACK_WIDTH * math.cos(beta1)) - (TRACK_WIDTH * math.cos(beta1) * (1-var)))*translate,
+                    y1 - TRACK_WIDTH * math.sin(beta1) * var + (2*(TRACK_WIDTH * math.sin(beta1)) - (TRACK_WIDTH * math.sin(beta1) * (1-var)))*translate,
+                )
+                obstacle2_r = (
+                    x2 - TRACK_WIDTH * math.cos(beta2) * var + (2*(TRACK_WIDTH * math.cos(beta2)) - (TRACK_WIDTH * math.cos(beta2) * (1-var)))*translate,
+                    y2 - TRACK_WIDTH * math.sin(beta2) * var + (2*(TRACK_WIDTH * math.sin(beta2)) - (TRACK_WIDTH * math.sin(beta2) * (1-var)))*translate,
+                )
+                obstacles_in_proximity = 0
+                vertices_obstacle = [obstacle1_l, obstacle1_r, obstacle2_r, obstacle2_l]
+                self.fd_tile.shape.vertices = vertices_obstacle
+                obstacle = self.world.CreateStaticBody(fixtures=self.fd_tile)
+                obstacle.userData = obstacle
+                obstacle.color = (0, 0, 255)
+                obstacle.road_visited = False
+                obstacle.road_friction = 1.0
+                obstacle.idx = i
+                obstacle.type = 1
+                obstacle.fixtures[0].sensor = True
+                self.road_poly.append((vertices_obstacle, obstacle.color))
+                self.road.append(obstacle)
             if border[i]:
                 side = np.sign(beta2 - beta1)
                 b1_l = (
@@ -468,6 +506,7 @@ class CarRacing(gym.Env, EzPickle):
                         (255, 255, 255) if i % 2 == 0 else (255, 0, 0),
                     )
                 )
+            obstacles_in_proximity += 1
         self.track = track
         return True
 
