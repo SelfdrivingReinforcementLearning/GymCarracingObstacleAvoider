@@ -25,16 +25,16 @@ class Agent:
     def define_model(self):
         model = keras.Sequential(
             [
-                layers.Conv2D(256, kernel_size=(5, 5), input_shape=(96, 96, 3), activation='relu'),
+                layers.Conv2D(16, kernel_size=(8, 8), input_shape=(96, 96, 3), activation='relu'),
                 layers.MaxPooling2D(pool_size=(3, 3)),
-                layers.Conv2D(128, kernel_size=(5, 5), activation='relu'),
+                layers.Conv2D(32, kernel_size=(4, 4), activation='relu'),
                 layers.MaxPooling2D(pool_size=(3, 3)),
                 layers.Flatten(),
-                layers.Dense(128),
+                layers.Dense(256),
                 layers.Dense(len(ACTIONS), activation='linear'),
             ]
         )
-        model.compile(loss="mse", optimizer=Adam(learning_rate=0.001), metrics=['accuracy'])
+        model.compile(loss="mse", optimizer=Adam(learning_rate=0.00025), metrics=['accuracy'])
         return model
 
     def get_action(self, state):
