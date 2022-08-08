@@ -17,7 +17,6 @@ def main():
         negative_reward_streak = 0
 
         while not done:
-            print(update_steps)
             action = agent.get_action(state)
             print(episode_reward)
             old_state = state
@@ -32,10 +31,10 @@ def main():
                 sample = random.sample(agent.buffer, agent.BATCH_SIZE)
                 agent.train(sample)
                 update_steps += 1
-                if update_steps == 5:
+                if update_steps == 15:
                     agent.target_model.set_weights(agent.training_model.get_weights())
                     update_steps = 0
-            if truncated or episode_reward < -50 or negative_reward_streak >= 50:
+            if truncated or episode_reward < -50 or negative_reward_streak >= 25:
                 break
 
         agent.epsilon = agent.epsilon * agent.DECAY_RATE
