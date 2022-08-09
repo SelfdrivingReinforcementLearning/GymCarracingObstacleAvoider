@@ -89,7 +89,7 @@ class FrictionDetector(contactListener):
             obj.tiles.add(tile)
             if not tile.road_visited:
                 if tile.type == 1:
-                    self.env.reward -= 50.0
+                    self.env.reward -= 5.0
                     return
                 else:
                     tile.road_visited = True
