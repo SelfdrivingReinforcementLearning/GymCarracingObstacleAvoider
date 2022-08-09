@@ -19,18 +19,18 @@ class Agent:
         self.buffer = deque(maxlen=self.BUFFER_SIZE)
         self.BATCH_SIZE = 8
         self.epsilon = 1
-        self.DECAY_RATE = 0.99
+        self.DECAY_RATE = 0.999
         self.MIN_EPSILON = 0.1
 
     def define_model(self):
         model = keras.Sequential(
             [
-                layers.Conv2D(16, kernel_size=(8, 8), input_shape=(96, 96, 3), activation='relu'),
+                layers.Conv2D(16, kernel_size=(8, 8), input_shape=(96, 96, 1), activation='relu'),
                 layers.MaxPooling2D(pool_size=(3, 3)),
                 layers.Conv2D(32, kernel_size=(4, 4), activation='relu'),
                 layers.MaxPooling2D(pool_size=(3, 3)),
                 layers.Flatten(),
-                layers.Dense(256),
+                layers.Dense(128),
                 layers.Dense(len(ACTIONS), activation='linear'),
             ]
         )

@@ -1,4 +1,5 @@
 import random
+import cv2 as cv
 from Agent import Agent
 from gym.envs.box2d.car_racing import CarRacing
 
@@ -12,6 +13,7 @@ def main():
     for i in range(1, episodes+1):
         print(f'Episode {i}')
         state = env.reset()
+        state = cv.cvtColor(state, cv.COLOR_BGR2GRAY)
         done = False
         episode_reward = 0
         negative_reward_streak = 0
@@ -21,6 +23,7 @@ def main():
             print(episode_reward)
             old_state = state
             state, reward, done, truncated, _ = env.step(action)
+            state = cv.cvtColor(state, cv.COLOR_BGR2GRAY)
             if reward < 0:
                 negative_reward_streak += 1
             else:
