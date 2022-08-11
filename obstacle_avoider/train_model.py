@@ -14,6 +14,7 @@ def main():
         print(f'Episode {i}')
         state = env.reset()
         state = cv.cvtColor(state, cv.COLOR_BGR2GRAY)
+        state = state / 255.0
         done = False
         episode_reward = 0
         negative_reward_streak = 0
@@ -24,6 +25,7 @@ def main():
             old_state = state
             state, reward, done, truncated, _ = env.step(action)
             state = cv.cvtColor(state, cv.COLOR_BGR2GRAY)
+            state = state / 255.0
             if reward < 0:
                 negative_reward_streak += 1
             else:
