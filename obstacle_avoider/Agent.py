@@ -17,7 +17,7 @@ class Agent:
         self.target_model = self.define_model()
         self.BUFFER_SIZE = 2000
         self.buffer = deque(maxlen=self.BUFFER_SIZE)
-        self.BATCH_SIZE = 8
+        self.BATCH_SIZE = 32
         self.epsilon = 1
         self.DECAY_RATE = 0.999
         self.MIN_EPSILON = 0.1
@@ -34,7 +34,7 @@ class Agent:
                 layers.Dense(len(ACTIONS), activation='linear'),
             ]
         )
-        model.compile(loss="mse", optimizer=Adam(learning_rate=0.00025), metrics=['accuracy'])
+        model.compile(loss="mse", optimizer=Adam(learning_rate=0.001), metrics=['accuracy'])
         return model
 
     def get_action(self, state):
