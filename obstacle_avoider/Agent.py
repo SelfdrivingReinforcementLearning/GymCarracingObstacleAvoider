@@ -52,8 +52,8 @@ class Agent:
             states.append(batch_item[0])
             new_states.append(batch_item[1])
 
-        training = self.training_model.predict(np.array(states), self.BATCH_SIZE)
-        target = self.target_model.predict(np.array(new_states), self.BATCH_SIZE)
+        training = self.training_model.predict(np.array(states), self.BATCH_SIZE, verbose=0)
+        target = self.target_model.predict(np.array(new_states), self.BATCH_SIZE, verbose=0)
 
         # calculates max q value for each batch entry returned by prediction in target model
         max_q_value_per_item = np.amax(target, axis=1)
@@ -69,8 +69,6 @@ class Agent:
                 q_value = reward
             else:
                 q_value = reward + 0.95 * max_q_value_per_item[i]
-
-            all_q_values[i] = training[i]
-            all_q_values[i][action_index] = q_value
+            training[i][action_index] = q_value
 
         return self.training_model.fit(np.array(states), np.array(all_q_values), self.BATCH_SIZE, shuffle=False)
