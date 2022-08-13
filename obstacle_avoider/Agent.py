@@ -29,7 +29,7 @@ class Agent:
                 layers.Conv2D(8, kernel_size=(5, 5), activation='relu'),
                 layers.MaxPooling2D(pool_size=(2, 2)),
                 layers.Flatten(),
-                layers.Dense(128),
+                layers.Dense(256),
                 layers.Dense(len(ACTIONS)),
             ]
         )
