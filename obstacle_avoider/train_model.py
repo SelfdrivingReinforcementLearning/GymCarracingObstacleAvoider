@@ -1,37 +1,52 @@
 import random
 import cv2 as cv
+import numpy as np
+from collections import deque
 from Agent import Agent
 from gym.envs.box2d.car_racing import CarRacing
 
 
 def main():
-    episodes = 2000
+    episodes = 20000
     env = CarRacing()
     agent = Agent()
-    update_steps = 0
 
-    for i in range(1, episodes+1):
-        print(f'Episode {i}')
+    for episode in range(1, episodes + 1):
+        print(f'Episode {episode}')
+        print('###########################################################')
         state = env.reset()
         state = cv.cvtColor(state, cv.COLOR_BGR2GRAY)
         state = state / 255.0
+        state_list = [state]
+        state_queue = deque(state_list * 4, maxlen=4)
+
         done = False
+        update_steps = 0
         episode_reward = 0
         negative_reward_streak = 0
 
         while not done:
-            action = agent.get_action(state)
+            env.render()
+            old_states_array = np.array(state_queue)
+            old_states = np.moveaxis(old_states_array, 0, -1)
+            action = agent.get_action(old_states)
+
             print(episode_reward)
-            old_state = state
-            state, reward, done, truncated, _ = env.step(action)
-            state = cv.cvtColor(state, cv.COLOR_BGR2GRAY)
-            state = state / 255.0
+            new_state, reward, done, truncated, _ = env.step(action)
+
+            new_state = cv.cvtColor(new_state, cv.COLOR_BGR2GRAY)
+            new_state = new_state / 255.0
+            state_queue.append(new_state)
+            new_states_array = np.array(state_queue)
+            next_states = np.moveaxis(new_states_array, 0, -1)
+
             if reward < 0:
                 negative_reward_streak += 1
             else:
                 negative_reward_streak = 0
             episode_reward += reward
-            agent.buffer.append((old_state, state, action, done, reward, truncated))
+            agent.buffer.append((old_states, next_states, agent.actions.index(action), done, reward, truncated))
+
             if len(agent.buffer) >= agent.BATCH_SIZE:
                 sample = random.sample(agent.buffer, agent.BATCH_SIZE)
                 agent.train(sample)
@@ -45,7 +60,7 @@ def main():
         agent.epsilon = agent.epsilon * agent.DECAY_RATE
         if agent.epsilon < agent.MIN_EPSILON:
             agent.epsilon = agent.MIN_EPSILON
-        if i % 100 == 0:
+        if episode % 100 == 0:
             agent.training_model.save(f'model/model_episodes{i}')
 
     agent.training_model.save(f'model/model_full')

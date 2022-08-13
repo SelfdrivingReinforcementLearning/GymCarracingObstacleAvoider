@@ -7,11 +7,13 @@ from tensorflow.keras import layers
 from tensorflow.keras.optimizers import Adam
 
 
-ACTIONS = [0, 1, 2, 3, 4]
-
-
 class Agent:
     def __init__(self):
+        self.actions = [
+            (-1, 1, 0), (0, 1, 0), (1, 1, 0),
+            (-1, 0, 0.3), (0, 0, 0.3), (1, 0, 0.3),
+            (-1, 0, 0), (0, 0, 0), (1, 0, 0)
+        ]
         self.training_model = self.define_model()
         self.target_model = self.define_model()
         self.BUFFER_SIZE = 2000
@@ -30,7 +32,7 @@ class Agent:
                 layers.MaxPooling2D(pool_size=(2, 2)),
                 layers.Flatten(),
                 layers.Dense(256),
-                layers.Dense(len(ACTIONS)),
+                layers.Dense(len(self.actions)),
             ]
         )
         model.compile(loss="mse", optimizer=Adam(learning_rate=0.001), metrics=['accuracy'])
@@ -39,8 +41,9 @@ class Agent:
     def get_action(self, state):
         rand = random.random()
         if rand < self.epsilon:
-            return random.choice(ACTIONS)
-        return np.argmax(self.training_model.predict(state.reshape(-1, *state.shape))[0])
+            return random.choice(self.actions)
+        best_action_index = np.argmax(self.training_model.predict(state.reshape(-1, *state.shape))[0])
+        return self.actions[best_action_index]
 
     def train(self, sample):
         states = []
@@ -58,7 +61,7 @@ class Agent:
         all_q_values = [None] * len(sample)
 
         for i, batch_item in enumerate(sample):
-            action = batch_item[2]
+            action_index = batch_item[2]
             done = batch_item[3]
             reward = batch_item[4]
             truncated = batch_item[5]
@@ -68,6 +71,6 @@ class Agent:
                 q_value = reward + 0.95 * max_q_value_per_item[i]
 
             all_q_values[i] = training[i]
-            all_q_values[i][action] = q_value
+            all_q_values[i][action_index] = q_value
 
         self.training_model.fit(np.array(states), np.array(all_q_values), self.BATCH_SIZE, shuffle=False)

@@ -202,7 +202,7 @@ class CarRacing(gym.Env, EzPickle):
         verbose: bool = False,
         lap_complete_percent: float = 0.95,
         domain_randomize: bool = False,
-        continuous: bool = False,
+        continuous: bool = True,
     ):
         EzPickle.__init__(self)
         self.continuous = continuous
