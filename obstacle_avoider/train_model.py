@@ -17,6 +17,7 @@ def main():
     episode_list = []
     hist = None
     model_name = 'Model_Eps0.999'
+    skip_frames = 4
 
     for episode in range(1, episodes + 1):
         print(f'Episode {episode}')
@@ -28,6 +29,7 @@ def main():
         state_queue = deque(state_list * 4, maxlen=4)
 
         done = False
+        truncated = False
         update_steps = 0
         episode_reward = 0
         negative_reward_streak = 0
@@ -37,9 +39,17 @@ def main():
             old_states_array = np.array(state_queue)
             old_states = np.moveaxis(old_states_array, 0, -1)
             action = agent.get_action(old_states)
-
             print(episode_reward)
-            new_state, reward, done, truncated, _ = env.step(action)
+
+            reward = 0
+            skip_count = 0
+            while not (done or truncated):
+                print('###')
+                new_state, frame_reward, done, truncated, _ = env.step(action)
+                reward += frame_reward
+                skip_count += 1
+                if skip_count == skip_frames:
+                    break
 
             new_state = cv.cvtColor(new_state, cv.COLOR_BGR2GRAY)
             new_state = new_state / 255.0
