@@ -1,6 +1,7 @@
 import random
 import cv2 as cv
 import numpy as np
+import matplotlib.pyplot as plt
 from collections import deque
 from Agent import Agent
 from gym.envs.box2d.car_racing import CarRacing
@@ -10,6 +11,12 @@ def main():
     episodes = 20000
     env = CarRacing()
     agent = Agent()
+    loss_values = []
+    accuracy_values = []
+    reward_values = []
+    episode_list = []
+    hist = None
+    model_name = 'Model_Eps0.999'
 
     for episode in range(1, episodes + 1):
         print(f'Episode {episode}')
@@ -49,19 +56,48 @@ def main():
 
             if len(agent.buffer) >= agent.BATCH_SIZE:
                 sample = random.sample(agent.buffer, agent.BATCH_SIZE)
-                agent.train(sample)
+                hist = agent.train(sample)
                 update_steps += 1
                 if update_steps == 15:
                     agent.target_model.set_weights(agent.training_model.get_weights())
                     update_steps = 0
             if truncated or episode_reward < -50 or negative_reward_streak >= 25:
-                break
+                done = True
+
+            if done:
+                if hist:
+                    loss = hist.history['loss'][0]
+                    accuracy = hist.history['accuracy'][0]
+                else:
+                    loss = -1.0
+                    accuracy = -1.0
+                loss_values.append(loss)
+                accuracy_values.append(accuracy)
+                episode_list.append(episode)
+                reward_values.append(episode_reward)
 
         agent.epsilon = agent.epsilon * agent.DECAY_RATE
         if agent.epsilon < agent.MIN_EPSILON:
             agent.epsilon = agent.MIN_EPSILON
-        if episode % 100 == 0:
-            agent.training_model.save(f'model/model_episodes{i}')
+        if episode % 25 == 0:
+            agent.training_model.save(f'models/{model_name}{episode}')
+            plt.plot(np.array(episode_list), np.array(loss_values), label='Loss')
+            plt.plot(np.array(episode_list), np.array(accuracy_values), label='Accuracy')
+            plt.xlabel('Episodes')
+            plt.ylabel('Loss and Accuracy')
+            plt.title('Loss and Accuracy by Episode')
+            plt.legend()
+            plt.savefig(f'logs/{model_name}_loss_and_accuracy.png', format='png')
+
+            plt.figure()
+            plt.plot(np.array(episode_list), np.array(reward_values), label='Episode Reward')
+            plt.xlabel('Episodes')
+            plt.ylabel('Episode Reward')
+            plt.title('Total Episode Reward by Episode')
+            plt.legend()
+            plt.savefig(f'logs/{model_name}_episode_reward.png', format='png')
+
+            plt.show()
 
     agent.training_model.save(f'model/model_full')
     env.close()

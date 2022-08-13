@@ -73,4 +73,4 @@ class Agent:
             all_q_values[i] = training[i]
             all_q_values[i][action_index] = q_value
 
-        self.training_model.fit(np.array(states), np.array(all_q_values), self.BATCH_SIZE, shuffle=False)
+        return self.training_model.fit(np.array(states), np.array(all_q_values), self.BATCH_SIZE, shuffle=False)
