@@ -1,4 +1,4 @@
-__credits__ = ["Andrea PIERRÉ, obstacles and adjustments added by Fabian Prasch"]
+__credits__ = ["Andrea PIERRÉ, modified by Fabian Prasch"]
 
 import math
 from typing import Optional, Union
@@ -89,7 +89,7 @@ class FrictionDetector(contactListener):
             obj.tiles.add(tile)
             if not tile.road_visited:
                 if tile.type == 1:
-                    self.env.reward -= 5.0
+                    self.env.reward -= 10.0
                     return
                 else:
                     tile.road_visited = True
@@ -226,6 +226,7 @@ class CarRacing(gym.Env, EzPickle):
         self.fd_tile = fixtureDef(
             shape=polygonShape(vertices=[(0, 0), (1, 0), (1, -1), (0, -1)])
         )
+        self.speed = 0
 
         # This will throw a warning in tests/envs/test_envs in utils/env_checker.py as the space is not symmetric
         #   or normalised however this is not possible here so ignore
@@ -579,6 +580,10 @@ class CarRacing(gym.Env, EzPickle):
         truncated = False
         if action is not None:  # First step without action, called from reset()
             self.reward -= 0.1
+            if self.speed < 20:
+                self.reward -= 0.015*(20-self.speed)
+            if self.speed > 70:
+                self.reward -= 0.025*(self.speed-70)
             # We actually don't want to count fuel spent, we want car to be faster.
             # self.reward -=  10 * self.car.fuel_spent / ENGINE_POWER
             self.car.fuel_spent = 0.0
@@ -730,6 +735,7 @@ class CarRacing(gym.Env, EzPickle):
             np.square(self.car.hull.linearVelocity[0])
             + np.square(self.car.hull.linearVelocity[1])
         )
+        self.speed = true_speed
 
         # simple wrapper to render if the indicator value is above a threshold
         def render_if_min(value, points, color):
