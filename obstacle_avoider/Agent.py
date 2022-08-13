@@ -2,7 +2,6 @@ import random
 from collections import deque
 
 import numpy as np
-import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras.optimizers import Adam
@@ -25,13 +24,13 @@ class Agent:
     def define_model(self):
         model = keras.Sequential(
             [
-                layers.Conv2D(16, kernel_size=(8, 8), input_shape=(96, 96, 1), activation='relu'),
+                layers.Conv2D(4, kernel_size=(7, 7), strides=(3, 3), input_shape=(96, 96, 4), activation='relu'),
                 layers.MaxPooling2D(pool_size=(3, 3)),
-                layers.Conv2D(32, kernel_size=(4, 4), activation='relu'),
-                layers.MaxPooling2D(pool_size=(3, 3)),
+                layers.Conv2D(8, kernel_size=(5, 5), activation='relu'),
+                layers.MaxPooling2D(pool_size=(2, 2)),
                 layers.Flatten(),
                 layers.Dense(128),
-                layers.Dense(len(ACTIONS), activation='linear'),
+                layers.Dense(len(ACTIONS)),
             ]
         )
         model.compile(loss="mse", optimizer=Adam(learning_rate=0.001), metrics=['accuracy'])
