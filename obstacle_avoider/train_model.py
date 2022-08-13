@@ -90,7 +90,7 @@ def main():
         if agent.epsilon < agent.MIN_EPSILON:
             agent.epsilon = agent.MIN_EPSILON
         if episode % 25 == 0:
-            agent.training_model.save(f'models/{model_name}{episode}')
+            agent.training_model.save(f'models/{model_name}_{episode}')
             plt.plot(np.array(episode_list), np.array(loss_values), label='Loss')
             plt.plot(np.array(episode_list), np.array(accuracy_values), label='Accuracy')
             plt.xlabel('Episodes')
