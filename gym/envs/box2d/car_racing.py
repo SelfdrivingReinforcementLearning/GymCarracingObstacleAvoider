@@ -89,7 +89,7 @@ class FrictionDetector(contactListener):
             obj.tiles.add(tile)
             if not tile.road_visited:
                 if tile.type == 1:
-                    self.env.reward -= 15.0
+                    self.env.reward -= 25.0
                     return
                 else:
                     tile.road_visited = True
@@ -451,7 +451,7 @@ class CarRacing(gym.Env, EzPickle):
             t.fixtures[0].sensor = True
             self.road_poly.append(([road1_l, road1_r, road2_r, road2_l], t.color))
             self.road.append(t)
-            if obstacles_in_proximity >= 5 and np.random.random() < 0.05:
+            if obstacles_in_proximity >= 5 and np.random.random() < 0.2:
                 var = 2/3
                 translate = np.random.random()
                 obstacle1_l = (
@@ -475,7 +475,7 @@ class CarRacing(gym.Env, EzPickle):
                 self.fd_tile.shape.vertices = vertices_obstacle
                 obstacle = self.world.CreateStaticBody(fixtures=self.fd_tile)
                 obstacle.userData = obstacle
-                obstacle.color = (0, 0, 255)
+                obstacle.color = (0, 0, 0)
                 obstacle.road_visited = False
                 obstacle.road_friction = 1.0
                 obstacle.idx = i
