@@ -20,7 +20,7 @@ class Agent:
         self.buffer = deque(maxlen=self.BUFFER_SIZE)
         self.BATCH_SIZE = 64
         self.epsilon = 1
-        self.DECAY_RATE = 0.99
+        self.DECAY_RATE = 0.995
         self.MIN_EPSILON = 0.1
 
     def define_model(self):
