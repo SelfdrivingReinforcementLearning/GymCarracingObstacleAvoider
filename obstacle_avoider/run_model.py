@@ -10,7 +10,7 @@ if __name__ == '__main__':
     agent = Agent()
     agent.epsilon = 0
 
-    agent.training_model = load_model('models/Model_Eps0.999_250')
+    agent.training_model = load_model('models/Model_Eps0.99_strict_1000')
 
     env = CarRacing()
 

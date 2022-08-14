@@ -16,7 +16,7 @@ def main():
     reward_values = []
     episode_list = []
     hist = None
-    model_name = 'Model_Eps0.999'
+    model_name = 'Model_Eps0.99_strict'
     skip_frames = 4
 
     for episode in range(1, episodes + 1):
@@ -44,7 +44,6 @@ def main():
             reward = 0
             skip_count = 0
             while not (done or truncated):
-                print('###')
                 new_state, frame_reward, done, truncated, _ = env.step(action)
                 reward += frame_reward
                 skip_count += 1
@@ -68,7 +67,7 @@ def main():
                 sample = random.sample(agent.buffer, agent.BATCH_SIZE)
                 hist = agent.train(sample)
                 update_steps += 1
-                if update_steps == 15:
+                if update_steps == 30:
                     agent.target_model.set_weights(agent.training_model.get_weights())
                     update_steps = 0
             if truncated or episode_reward < -50 or negative_reward_streak >= 25:

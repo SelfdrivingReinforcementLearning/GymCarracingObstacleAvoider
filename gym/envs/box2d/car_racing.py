@@ -89,7 +89,7 @@ class FrictionDetector(contactListener):
             obj.tiles.add(tile)
             if not tile.road_visited:
                 if tile.type == 1:
-                    self.env.reward -= 50.0
+                    self.env.reward -= 15.0
                     return
                 else:
                     tile.road_visited = True
@@ -583,7 +583,7 @@ class CarRacing(gym.Env, EzPickle):
             if self.speed < 20:
                 self.reward -= 0.015*(20-self.speed)
             if self.speed > 70:
-                self.reward -= 0.025*(self.speed-70)
+                self.reward -= 0.075*(self.speed-60)
             # We actually don't want to count fuel spent, we want car to be faster.
             # self.reward -=  10 * self.car.fuel_spent / ENGINE_POWER
             self.car.fuel_spent = 0.0

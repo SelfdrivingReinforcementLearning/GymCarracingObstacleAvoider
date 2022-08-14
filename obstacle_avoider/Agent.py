@@ -20,7 +20,7 @@ class Agent:
         self.buffer = deque(maxlen=self.BUFFER_SIZE)
         self.BATCH_SIZE = 64
         self.epsilon = 1
-        self.DECAY_RATE = 0.95
+        self.DECAY_RATE = 0.99
         self.MIN_EPSILON = 0.1
 
     def define_model(self):
@@ -58,8 +58,6 @@ class Agent:
         # calculates max q value for each batch entry returned by prediction in target model
         max_q_value_per_item = np.amax(target, axis=1)
 
-        all_q_values = [None] * len(sample)
-
         for i, batch_item in enumerate(sample):
             action_index = batch_item[2]
             done = batch_item[3]
@@ -71,4 +69,4 @@ class Agent:
                 q_value = reward + 0.95 * max_q_value_per_item[i]
             training[i][action_index] = q_value
 
-        return self.training_model.fit(np.array(states), np.array(all_q_values), self.BATCH_SIZE, shuffle=False)
+        return self.training_model.fit(np.array(states), np.array(training), self.BATCH_SIZE, verbose=0)
