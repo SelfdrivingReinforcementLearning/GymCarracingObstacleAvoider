@@ -1,4 +1,4 @@
-__credits__ = ["Andrea PIERRÉ, obstacles and adjustments added by Fabian Prasch"]
+__credits__ = ["Andrea PIERRÉ, modified by Fabian Prasch"]
 
 import math
 from typing import Optional, Union
@@ -89,7 +89,7 @@ class FrictionDetector(contactListener):
             obj.tiles.add(tile)
             if not tile.road_visited:
                 if tile.type == 1:
-                    self.env.reward -= 50.0
+                    self.env.reward -= 25.0
                     return
                 else:
                     tile.road_visited = True
@@ -202,7 +202,7 @@ class CarRacing(gym.Env, EzPickle):
         verbose: bool = False,
         lap_complete_percent: float = 0.95,
         domain_randomize: bool = False,
-        continuous: bool = False,
+        continuous: bool = True,
     ):
         EzPickle.__init__(self)
         self.continuous = continuous
@@ -226,6 +226,7 @@ class CarRacing(gym.Env, EzPickle):
         self.fd_tile = fixtureDef(
             shape=polygonShape(vertices=[(0, 0), (1, 0), (1, -1), (0, -1)])
         )
+        self.speed = 0
 
         # This will throw a warning in tests/envs/test_envs in utils/env_checker.py as the space is not symmetric
         #   or normalised however this is not possible here so ignore
@@ -450,7 +451,7 @@ class CarRacing(gym.Env, EzPickle):
             t.fixtures[0].sensor = True
             self.road_poly.append(([road1_l, road1_r, road2_r, road2_l], t.color))
             self.road.append(t)
-            if obstacles_in_proximity >= 5 and np.random.random() < 0.05:
+            if obstacles_in_proximity >= 5 and np.random.random() < 0.2:
                 var = 2/3
                 translate = np.random.random()
                 obstacle1_l = (
@@ -474,7 +475,7 @@ class CarRacing(gym.Env, EzPickle):
                 self.fd_tile.shape.vertices = vertices_obstacle
                 obstacle = self.world.CreateStaticBody(fixtures=self.fd_tile)
                 obstacle.userData = obstacle
-                obstacle.color = (0, 0, 255)
+                obstacle.color = (0, 0, 0)
                 obstacle.road_visited = False
                 obstacle.road_friction = 1.0
                 obstacle.idx = i
@@ -579,6 +580,10 @@ class CarRacing(gym.Env, EzPickle):
         truncated = False
         if action is not None:  # First step without action, called from reset()
             self.reward -= 0.1
+            if self.speed < 20:
+                self.reward -= 0.015*(20-self.speed)
+            if self.speed > 70:
+                self.reward -= 0.075*(self.speed-60)
             # We actually don't want to count fuel spent, we want car to be faster.
             # self.reward -=  10 * self.car.fuel_spent / ENGINE_POWER
             self.car.fuel_spent = 0.0
@@ -730,6 +735,7 @@ class CarRacing(gym.Env, EzPickle):
             np.square(self.car.hull.linearVelocity[0])
             + np.square(self.car.hull.linearVelocity[1])
         )
+        self.speed = true_speed
 
         # simple wrapper to render if the indicator value is above a threshold
         def render_if_min(value, points, color):
