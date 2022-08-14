@@ -67,7 +67,7 @@ def main():
                 sample = random.sample(agent.buffer, agent.BATCH_SIZE)
                 hist = agent.train(sample)
                 update_steps += 1
-                if update_steps == 20:
+                if update_steps == 15:
                     agent.target_model.set_weights(agent.training_model.get_weights())
                     update_steps = 0
             if truncated or episode_reward < -50 or negative_reward_streak >= 25:
