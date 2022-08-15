@@ -14,7 +14,7 @@ def main():
     # set epsilon to 0 to enable full exploitation
     agent.epsilon = 0
 
-    agent.training_model = load_model('models/Model_Eps0.995_875')
+    agent.training_model = load_model('models/Model_Eps0.995_875.h5')
 
     env = CarRacing()
 

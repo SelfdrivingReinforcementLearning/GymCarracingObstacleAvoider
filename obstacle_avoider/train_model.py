@@ -120,7 +120,7 @@ def main():
 
         # save the model and log loss and accuracy per episode every 25 episodes
         if episode % 25 == 0:
-            agent.training_model.save(f'models/{model_name}_{episode}')
+            agent.training_model.save(f'models/{model_name}_{episode}.h5')
             plt.plot(np.array(episode_list), np.array(loss_values), label='Loss')
             plt.plot(np.array(episode_list), np.array(accuracy_values), label='Accuracy')
             plt.xlabel('Episodes')
@@ -140,7 +140,7 @@ def main():
             plt.show()
 
     # save the complete model once training is done
-    agent.training_model.save(f'models/{model_name}_full')
+    agent.training_model.save(f'models/{model_name}_full.h5')
     env.close()
 
 
