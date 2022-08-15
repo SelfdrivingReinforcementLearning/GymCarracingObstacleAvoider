@@ -7,8 +7,6 @@ Running obstacle_avoider/run_model.py will run the model with a given name.
 
 ## Installation
 
-### Windows
-
 1. Clone this repository
 2. Download swigwin from https://sourceforge.net/projects/swig/files/swigwin/swigwin-4.0.2/swigwin-4.0.2.zip/download?use_mirror=netcologne
 3. Extract the zip and add path to swig.exe to PATH
@@ -16,11 +14,6 @@ Running obstacle_avoider/run_model.py will run the model with a given name.
 5. Download and install Microsoft Build Tools from https://visualstudio.microsoft.com/de/visual-cpp-build-tools/
 6. Run `pip install -r requirements.txt`
 7. Run `pip install gym[box2d]`
-
-### Linux
-
-1. Clone this repository
-2. Run `setup.sh`
 
 ## OpenAi Gym
 
