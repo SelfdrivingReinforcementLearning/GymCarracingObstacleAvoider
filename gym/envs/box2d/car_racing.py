@@ -88,6 +88,7 @@ class FrictionDetector(contactListener):
         if begin:
             obj.tiles.add(tile)
             if not tile.road_visited:
+                # apply a negative reward if agent hits an obstacle
                 if tile.type == 1:
                     self.env.reward -= 15.0
                     return
@@ -451,24 +452,31 @@ class CarRacing(gym.Env, EzPickle):
             t.fixtures[0].sensor = True
             self.road_poly.append(([road1_l, road1_r, road2_r, road2_l], t.color))
             self.road.append(t)
+
+            # 20% chance to create an obstacle if there were no obstacles on the last 5 tiles
             if obstacles_in_proximity >= 5 and np.random.random() < 0.2:
-                var = 2/3
+                # determine size of the obstacle
+                size = 2/3
+
+                # randomly determine location of obstacle on tile
                 translate = np.random.random()
+
+                # determine corner points of obstacle
                 obstacle1_l = (
-                    x1 - TRACK_WIDTH * math.cos(beta1) + (2*(TRACK_WIDTH * math.cos(beta1)) - (TRACK_WIDTH * math.cos(beta1) * (1-var)))*translate,
-                    y1 - TRACK_WIDTH * math.sin(beta1) + (2*(TRACK_WIDTH * math.sin(beta1)) - (TRACK_WIDTH * math.sin(beta1) * (1-var)))*translate,
+                    x1 - TRACK_WIDTH * math.cos(beta1) + (2*(TRACK_WIDTH * math.cos(beta1)) - (TRACK_WIDTH * math.cos(beta1) * (1-size)))*translate,
+                    y1 - TRACK_WIDTH * math.sin(beta1) + (2*(TRACK_WIDTH * math.sin(beta1)) - (TRACK_WIDTH * math.sin(beta1) * (1-size)))*translate,
                 )
                 obstacle2_l = (
-                    x2 - TRACK_WIDTH * math.cos(beta2) + (2*(TRACK_WIDTH * math.cos(beta2)) - (TRACK_WIDTH * math.cos(beta2) * (1-var)))*translate,
-                    y2 - TRACK_WIDTH * math.sin(beta2) + (2*(TRACK_WIDTH * math.sin(beta2)) - (TRACK_WIDTH * math.sin(beta2) * (1-var)))*translate,
+                    x2 - TRACK_WIDTH * math.cos(beta2) + (2*(TRACK_WIDTH * math.cos(beta2)) - (TRACK_WIDTH * math.cos(beta2) * (1-size)))*translate,
+                    y2 - TRACK_WIDTH * math.sin(beta2) + (2*(TRACK_WIDTH * math.sin(beta2)) - (TRACK_WIDTH * math.sin(beta2) * (1-size)))*translate,
                 )
                 obstacle1_r = (
-                    x1 - TRACK_WIDTH * math.cos(beta1) * var + (2*(TRACK_WIDTH * math.cos(beta1)) - (TRACK_WIDTH * math.cos(beta1) * (1-var)))*translate,
-                    y1 - TRACK_WIDTH * math.sin(beta1) * var + (2*(TRACK_WIDTH * math.sin(beta1)) - (TRACK_WIDTH * math.sin(beta1) * (1-var)))*translate,
+                    x1 - TRACK_WIDTH * math.cos(beta1) * size + (2*(TRACK_WIDTH * math.cos(beta1)) - (TRACK_WIDTH * math.cos(beta1) * (1-size)))*translate,
+                    y1 - TRACK_WIDTH * math.sin(beta1) * size + (2*(TRACK_WIDTH * math.sin(beta1)) - (TRACK_WIDTH * math.sin(beta1) * (1-size)))*translate,
                 )
                 obstacle2_r = (
-                    x2 - TRACK_WIDTH * math.cos(beta2) * var + (2*(TRACK_WIDTH * math.cos(beta2)) - (TRACK_WIDTH * math.cos(beta2) * (1-var)))*translate,
-                    y2 - TRACK_WIDTH * math.sin(beta2) * var + (2*(TRACK_WIDTH * math.sin(beta2)) - (TRACK_WIDTH * math.sin(beta2) * (1-var)))*translate,
+                    x2 - TRACK_WIDTH * math.cos(beta2) * size + (2*(TRACK_WIDTH * math.cos(beta2)) - (TRACK_WIDTH * math.cos(beta2) * (1-size)))*translate,
+                    y2 - TRACK_WIDTH * math.sin(beta2) * size + (2*(TRACK_WIDTH * math.sin(beta2)) - (TRACK_WIDTH * math.sin(beta2) * (1-size)))*translate,
                 )
                 obstacles_in_proximity = 0
                 vertices_obstacle = [obstacle1_l, obstacle1_r, obstacle2_r, obstacle2_l]
