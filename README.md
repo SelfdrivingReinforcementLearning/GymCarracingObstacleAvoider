@@ -19,7 +19,7 @@ Running obstacle_avoider/run_model.py will run the model with a given name.
 
 The agent learned to drive and dodge obstacles reasonably well. Its performance was evaluated over 10 runs, where it on average managed to go around 4.2 corners while dodging 10.2 out of 12.0 obstacles.
 
-The main problems are that the agent sometimes spins or stops in corners when there is an obstacle at a hard position.
+The main problems are that the agent sometimes spins or stops in corners when there is an obstacle at a difficult position.
 Here we can see the agent in action:
 
 https://user-images.githubusercontent.com/108098329/184644791-2a1344d0-903a-4ac3-9e40-30cababf0c4c.mp4
