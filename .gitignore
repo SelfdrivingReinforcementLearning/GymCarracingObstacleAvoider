@@ -18,8 +18,6 @@
 *.sublime-project
 *.sublime-workspace
 
-logs/
-
 .ipynb_checkpoints
 ghostdriver.log
 

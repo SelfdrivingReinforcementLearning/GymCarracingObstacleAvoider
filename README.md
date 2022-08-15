@@ -1,3 +1,36 @@
+## Gym CarRacing Obstacle Avoider
+
+This repository was created as part of the bachelor thesis of Fabian Prasch. The OpenAi Gym CarRacing environment was modified to include obstacles and an agent was trained to dodge said obstacles.
+
+Running obstacle_avoider/train_model.py will train the agent for 20000 episodes and save the model with a given name.
+Running obstacle_avoider/run_model.py will run the model with a given name.
+
+## Installation
+
+1. Clone this repository
+2. Download swigwin from https://sourceforge.net/projects/swig/files/swigwin/swigwin-4.0.2/swigwin-4.0.2.zip/download?use_mirror=netcologne
+3. Extract the zip and add path to swig.exe to PATH
+4. Restart the computer
+5. Download and install Microsoft Build Tools from https://visualstudio.microsoft.com/de/visual-cpp-build-tools/
+6. Run `pip install -r requirements.txt`
+7. Run `pip install gym[box2d]`
+
+## Result
+
+The agent learned to drive and dodge obstacles reasonably well. Its performance was evaluated over 10 runs, where it on average managed to go around 4.2 corners while dodging 10.2 out of 12.0 obstacles.
+
+The main problems are that the agent sometimes spins or stops in corners when there is an obstacle at a difficult position.
+Here we can see the agent in action:
+
+https://user-images.githubusercontent.com/108098329/184644791-2a1344d0-903a-4ac3-9e40-30cababf0c4c.mp4
+
+
+## OpenAi Gym
+
+The following is the original README of OpenAi Gym
+
+
+
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://pre-commit.com/) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 ## Gym

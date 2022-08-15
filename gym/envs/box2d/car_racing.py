@@ -1,4 +1,4 @@
-__credits__ = ["Andrea PIERRÉ"]
+__credits__ = ["Andrea PIERRÉ, modified by Fabian Prasch"]
 
 import math
 from typing import Optional, Union
@@ -88,9 +88,14 @@ class FrictionDetector(contactListener):
         if begin:
             obj.tiles.add(tile)
             if not tile.road_visited:
-                tile.road_visited = True
-                self.env.reward += 1000.0 / len(self.env.track)
-                self.env.tile_visited_count += 1
+                # apply a negative reward if agent hits an obstacle
+                if tile.type == 1:
+                    self.env.reward -= 15.0
+                    return
+                else:
+                    tile.road_visited = True
+                    self.env.reward += 1000.0 / len(self.env.track)
+                    self.env.tile_visited_count += 1
 
                 # Lap is considered completed if enough % of the track was covered
                 if (
@@ -222,6 +227,7 @@ class CarRacing(gym.Env, EzPickle):
         self.fd_tile = fixtureDef(
             shape=polygonShape(vertices=[(0, 0), (1, 0), (1, -1), (0, -1)])
         )
+        self.speed = 0
 
         # This will throw a warning in tests/envs/test_envs in utils/env_checker.py as the space is not symmetric
         #   or normalised however this is not possible here so ignore
@@ -413,6 +419,7 @@ class CarRacing(gym.Env, EzPickle):
                 border[i - neg] |= border[i]
 
         # Create tiles
+        obstacles_in_proximity = 1
         for i in range(len(track)):
             alpha1, beta1, x1, y1 = track[i]
             alpha2, beta2, x2, y2 = track[i - 1]
@@ -441,9 +448,49 @@ class CarRacing(gym.Env, EzPickle):
             t.road_visited = False
             t.road_friction = 1.0
             t.idx = i
+            t.type = 0
             t.fixtures[0].sensor = True
             self.road_poly.append(([road1_l, road1_r, road2_r, road2_l], t.color))
             self.road.append(t)
+
+            # 20% chance to create an obstacle if there were no obstacles on the last 5 tiles
+            if obstacles_in_proximity >= 5 and np.random.random() < 0.2:
+                # determine size of the obstacle
+                size = 2/3
+
+                # randomly determine location of obstacle on tile
+                translate = np.random.random()
+
+                # determine corner points of obstacle
+                obstacle1_l = (
+                    x1 - TRACK_WIDTH * math.cos(beta1) + (2*(TRACK_WIDTH * math.cos(beta1)) - (TRACK_WIDTH * math.cos(beta1) * (1-size)))*translate,
+                    y1 - TRACK_WIDTH * math.sin(beta1) + (2*(TRACK_WIDTH * math.sin(beta1)) - (TRACK_WIDTH * math.sin(beta1) * (1-size)))*translate,
+                )
+                obstacle2_l = (
+                    x2 - TRACK_WIDTH * math.cos(beta2) + (2*(TRACK_WIDTH * math.cos(beta2)) - (TRACK_WIDTH * math.cos(beta2) * (1-size)))*translate,
+                    y2 - TRACK_WIDTH * math.sin(beta2) + (2*(TRACK_WIDTH * math.sin(beta2)) - (TRACK_WIDTH * math.sin(beta2) * (1-size)))*translate,
+                )
+                obstacle1_r = (
+                    x1 - TRACK_WIDTH * math.cos(beta1) * size + (2*(TRACK_WIDTH * math.cos(beta1)) - (TRACK_WIDTH * math.cos(beta1) * (1-size)))*translate,
+                    y1 - TRACK_WIDTH * math.sin(beta1) * size + (2*(TRACK_WIDTH * math.sin(beta1)) - (TRACK_WIDTH * math.sin(beta1) * (1-size)))*translate,
+                )
+                obstacle2_r = (
+                    x2 - TRACK_WIDTH * math.cos(beta2) * size + (2*(TRACK_WIDTH * math.cos(beta2)) - (TRACK_WIDTH * math.cos(beta2) * (1-size)))*translate,
+                    y2 - TRACK_WIDTH * math.sin(beta2) * size + (2*(TRACK_WIDTH * math.sin(beta2)) - (TRACK_WIDTH * math.sin(beta2) * (1-size)))*translate,
+                )
+                obstacles_in_proximity = 0
+                vertices_obstacle = [obstacle1_l, obstacle1_r, obstacle2_r, obstacle2_l]
+                self.fd_tile.shape.vertices = vertices_obstacle
+                obstacle = self.world.CreateStaticBody(fixtures=self.fd_tile)
+                obstacle.userData = obstacle
+                obstacle.color = (0, 0, 255)
+                obstacle.road_visited = False
+                obstacle.road_friction = 1.0
+                obstacle.idx = i
+                obstacle.type = 1
+                obstacle.fixtures[0].sensor = True
+                self.road_poly.append((vertices_obstacle, obstacle.color))
+                self.road.append(obstacle)
             if border[i]:
                 side = np.sign(beta2 - beta1)
                 b1_l = (
@@ -468,6 +515,7 @@ class CarRacing(gym.Env, EzPickle):
                         (255, 255, 255) if i % 2 == 0 else (255, 0, 0),
                     )
                 )
+            obstacles_in_proximity += 1
         self.track = track
         return True
 
@@ -540,6 +588,10 @@ class CarRacing(gym.Env, EzPickle):
         truncated = False
         if action is not None:  # First step without action, called from reset()
             self.reward -= 0.1
+            if self.speed < 20:
+                self.reward -= 0.015*(20-self.speed)
+            if self.speed > 70:
+                self.reward -= 0.075*(self.speed-60)
             # We actually don't want to count fuel spent, we want car to be faster.
             # self.reward -=  10 * self.car.fuel_spent / ENGINE_POWER
             self.car.fuel_spent = 0.0
@@ -691,6 +743,7 @@ class CarRacing(gym.Env, EzPickle):
             np.square(self.car.hull.linearVelocity[0])
             + np.square(self.car.hull.linearVelocity[1])
         )
+        self.speed = true_speed
 
         # simple wrapper to render if the indicator value is above a threshold
         def render_if_min(value, points, color):
