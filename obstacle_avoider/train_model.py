@@ -18,7 +18,7 @@ def main():
     reward_values = []
     episode_list = []
     hist = None
-    model_name = 'Model_Eps0.995_bigger'
+    model_name = 'Model_Eps0.995'
 
     # determines how many of the frames will be used
     # e.g. if skip_frames is 4, then every 4th frame will be used
